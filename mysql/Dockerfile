@@ -1,9 +1,3 @@
-#*********************************************************************
-#   Copyright 2019 Regents of the University of California
-#   All rights reserved
-#*********************************************************************
-# docker build -t cdluc3/mrt-database .
-
 FROM mysql
 
 COPY init.sql /docker-entrypoint-initdb.d/start.sql
