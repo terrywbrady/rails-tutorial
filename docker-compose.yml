@@ -1,0 +1,59 @@
+version: '3.7'
+networks:
+  demonet:
+services:
+  myruby:
+    container_name: myruby
+    image: my-ruby
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+    - published: 3000
+      target: 3000
+    volumes:
+    - type: bind
+      source: ./sites-docker
+      target: /Sites
+    - type: bind
+      source: ./database.yml
+      target: /tmp/database.yml
+    entrypoint:
+      - /bin/bash
+      - '-c'
+      - |
+          if [ -d demo ]
+          then
+            echo "demo exists"
+            rm demo/tmp/pids/server.pid
+          else
+            rails new demo -d mysql
+          fi
+          cd demo
+          if [ -e /tmp/database.yml ]
+          then
+            cp /tmp/database.yml config/database.yml
+          fi
+          bundle install
+          bundle exec rails server -b "0.0.0.0"
+    networks:
+      demonet:
+    stdin_open: true
+    tty: true
+  mymysql:
+    container_name: mymysql
+    image: my-mysql
+    build:
+      context: mysql
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      #MYSQL_DATABASE: 'demo_development'
+      #MYSQL_USER: 'user'
+      #MYSQL_PASSWORD: 'password'
+      MYSQL_ROOT_PASSWORD: 'root-password'
+    entrypoint: ['docker-entrypoint.sh', '--default-authentication-plugin=mysql_native_password']
+    security_opt:
+      - seccomp:unconfined
+    networks:
+      demonet:
