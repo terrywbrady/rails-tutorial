@@ -15,26 +15,18 @@ services:
     - type: bind
       source: ./sites-docker
       target: /Sites
-    - type: bind
-      source: ./database.yml
-      target: /tmp/database.yml
     entrypoint:
       - /bin/bash
       - '-c'
       - |
-          if [ -d demo ]
+          if [ -d simple_cms ]
           then
-            echo "demo exists"
-            rm demo/tmp/pids/server.pid
-          else
-            rails new demo -d mysql
+            echo "simple_cms exists"
+            rm simple_cms/tmp/pids/server.pid
           fi
-          cd demo
-          if [ -e /tmp/database.yml ]
-          then
-            cp /tmp/database.yml config/database.yml
-          fi
+          cd simple_cms
           bundle install
+          bundle exec rails db:migrate
           bundle exec rails server -b "0.0.0.0"
     networks:
       demonet:
